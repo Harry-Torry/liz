@@ -1,0 +1,48 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+version: "3.1"
+services:
+
+    mailhog:
+      image: mailhog/mailhog:latest
+      container_name: liz-mailhog
+      ports:
+        - "8001:8025"
+
+    redis:
+      image: redis:alpine
+      container_name: liz-redis
+
+    mariadb:
+      image: mariadb:10.1
+      container_name: liz-mariadb
+      working_dir: /application
+      volumes:
+        - .:/application
+      environment:
+        - MYSQL_ROOT_PASSWORD=password
+        - MYSQL_DATABASE=liz
+        - MYSQL_USER=liz
+        - MYSQL_PASSWORD=password
+      ports:
+        - "8003:3306"
+
+    webserver:
+      image: nginx:alpine
+      container_name: liz-webserver
+      working_dir: /application
+      volumes:
+          - ./Liz:/application
+          - ./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      ports:
+       - "8002:80"
+
+    php-fpm:
+      build: phpdocker/php-fpm
+      container_name: liz-php-fpm
+      working_dir: /application
+      volumes:
+        - ./Liz:/application
+        - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
+
